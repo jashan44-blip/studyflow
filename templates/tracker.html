@@ -1,0 +1,112 @@
+{# ============================================================
+   StudyFlow — Study Tracker Page
+   Log a new session and view all past sessions.
+   templates/tracker.html
+============================================================ #}
+{% extends "base.html" %}
+{% block title %}Tracker{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Study Tracker</h2>
+    <p class="page-sub">Log your study sessions and track your progress.</p>
+  </div>
+</div>
+
+{# ── Two-column layout: form + session list ── #}
+<div class="tracker-grid">
+
+  {# ── Log Session Form ── #}
+  <div class="card form-card">
+    <h3 class="sec-title">Log New Session</h3>
+
+    {#
+      Form submits to /add (Flask route: add_session).
+      method="POST" is required to send form data to Flask.
+    #}
+    <form method="POST" action="{{ url_for('add_session') }}" class="form-rows">
+
+      <div class="field">
+        <label for="subject">Subject / Topic</label>
+        <input type="text" id="subject" name="subject"
+               placeholder="e.g. Calculus, Python, Biology…" required/>
+      </div>
+
+      <div class="field">
+        <label for="duration">Duration (minutes)</label>
+        <input type="number" id="duration" name="duration"
+               placeholder="e.g. 45" min="1" max="480" required/>
+      </div>
+
+      {# Mood — clickable buttons (JS sets the hidden input value) #}
+      <div class="field">
+        <label>Mood</label>
+        <div class="mood-grid" id="moodGrid">
+          <button type="button" class="mood-btn" data-mood="Focused"  data-cls="sel-focused">🎯 Focused</button>
+          <button type="button" class="mood-btn" data-mood="Happy"    data-cls="sel-happy">  😊 Happy</button>
+          <button type="button" class="mood-btn" data-mood="Tired"    data-cls="sel-tired">  😴 Tired</button>
+          <button type="button" class="mood-btn" data-mood="Stressed" data-cls="sel-stressed">😤 Stressed</button>
+          <button type="button" class="mood-btn" data-mood="Neutral"  data-cls="sel-neutral">😐 Neutral</button>
+        </div>
+        {# Hidden input carries the selected mood value to Flask #}
+        <input type="hidden" id="moodValue" name="mood" value="Neutral"/>
+      </div>
+
+      <div class="field">
+        <label for="notes">Notes (optional)</label>
+        <textarea id="notes" name="notes" rows="3"
+                  placeholder="What did you cover? Any observations?"></textarea>
+      </div>
+
+      <button type="submit" class="btn-primary full-width">Log Session →</button>
+    </form>
+  </div>
+
+  {# ── Session List ── #}
+  <div class="card list-card">
+    <div class="section-head">
+      <h3 class="sec-title">All Sessions</h3>
+      <span class="badge-count">{{ sessions|length }}</span>
+    </div>
+
+    {% if sessions %}
+      <div class="session-list scrollable">
+        {% for s in sessions %}
+        <div class="session-item">
+          <div class="session-dot" style="background: hsl({{ loop.index * 47 % 360 }}, 70%, 65%)"></div>
+          <div class="session-meta">
+            <div class="session-subject">{{ s.subject }}</div>
+            <div class="session-time">{{ s.date }} · {{ s.time }} · {{ s.mood }}</div>
+            {% if s.notes %}
+              <div class="session-notes">{{ s.notes }}</div>
+            {% endif %}
+          </div>
+          <div class="session-dur">{{ s.duration }}m</div>
+
+          {# Delete button — submits a small POST form to /delete/<id> #}
+          <form method="POST" action="{{ url_for('delete_session', session_id=s.id) }}"
+                style="margin:0" onsubmit="return confirm('Delete this session?')">
+            <button type="submit" class="btn-delete" title="Delete">✕</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>No sessions logged yet. Use the form to add one!</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{# Mood button JS lives in script.js; this block adds any page-specific extras #}
+<script>
+  // Initialise mood buttons on this page
+  initMoodButtons("moodGrid", "moodValue");
+</script>
+{% endblock %}

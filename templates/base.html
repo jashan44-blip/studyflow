@@ -1,0 +1,80 @@
+{# ============================================================
+   StudyFlow — Base Layout Template
+   All other pages extend this template using Jinja2 blocks.
+   templates/base.html
+============================================================ #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyFlow — {% block title %}Home{% endblock %}</title>
+
+  {# Google Fonts #}
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+
+  {# Chart.js (only loaded when a page needs it) #}
+  {% block head_extra %}{% endblock %}
+
+  {# Our main stylesheet — url_for generates the correct path #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+  {# ── Ambient background blobs ── #}
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  {# ── Navigation bar (shown only when logged in) ── #}
+  {% if session.username %}
+  <nav class="navbar">
+    <a class="nav-logo" href="{{ url_for('dashboard') }}">Study<span>Flow</span></a>
+
+    <ul class="nav-links">
+      <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a></li>
+      <li><a href="{{ url_for('tracker') }}" class="{{ 'active' if request.endpoint == 'tracker' }}">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Tracker
+      </a></li>
+      <li><a href="{{ url_for('timer') }}" class="{{ 'active' if request.endpoint == 'timer' }}">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Timer
+      </a></li>
+      <li><a href="{{ url_for('analytics') }}" class="{{ 'active' if request.endpoint == 'analytics' }}">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Analytics
+      </a></li>
+    </ul>
+
+    <div class="nav-right">
+      <span class="nav-user">{{ session.username }}</span>
+      <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+    </div>
+  </nav>
+  {% endif %}
+
+  {# ── Flash messages (success / danger / info / warning) ── #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {# ── Main page content ── #}
+  <main class="main-content {% if not session.username %}auth-page{% endif %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  {# Our main JS file #}
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

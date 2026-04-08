@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Dashboard</h2>
+    <p class="page-sub">Here's your study overview, <strong>{{ username }}</strong>.</p>
+  </div>
+  <a href="{{ url_for('tracker') }}" class="btn-primary">+ Log Session</a>
+</div>
+
+<!-- ================= STATS ================= -->
+<div class="stats-grid">
+
+  <!-- TODAY -->
+  <div class="card stat-card" style="--accent:#8b5cf6">
+    <div class="stat-icon">⏱</div>
+    <div class="stat-label">Today's Study</div>
+
+    <div class="stat-value">
+      {% if stats and stats.today_minutes and stats.today_minutes >= 60 %}
+        {{ (stats.today_minutes // 60) }}h {{ stats.today_minutes % 60 }}m
+      {% else %}
+        {{ stats.today_minutes if stats else 0 }}m
+      {% endif %}
+    </div>
+
+    <div class="stat-sub">
+      {{ stats.today_sessions if stats else 0 }}
+      session{{ 's' if stats and stats.today_sessions != 1 else '' }} today
+    </div>
+  </div>
+
+
+  <!-- ⚡ XP SYSTEM -->
+  <div class="card stat-card xp-card" style="--accent:#3b82f6">
+    <div class="stat-icon">⚡</div>
+
+    <div class="stat-label">
+      Level {{ stats.level if stats else 1 }}
+    </div>
+
+    <div class="stat-value">
+      {{ stats.xp if stats else 0 }} XP
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill"
+           style="width: {{ stats.progress if stats else 0 }}%">
+      </div>
+    </div>
+
+    <div class="stat-sub">
+      {{ stats.progress if stats else 0 }}/100 XP to next level
+    </div>
+  </div>
+
+
+  <!-- 🔥 STREAK -->
+  <div class="card stat-card streak-card" style="--accent:#22c55e">
+    <div class="stat-icon fire">🔥</div>
+
+    <div class="stat-label">Daily Streak</div>
+
+    <div class="stat-value streak-value">
+      {{ stats.streak if stats else 0 }}
+    </div>
+
+    <div class="stat-sub">
+      {% if stats and stats.streak > 0 %}
+        Keep going 🚀
+      {% else %}
+        Start today!
+      {% endif %}
+    </div>
+
+    <div class="streak-glow"></div>
+  </div>
+
+
+  <!-- TOTAL SESSIONS -->
+  <div class="card stat-card" style="--accent:#ec4899">
+    <div class="stat-icon">🎯</div>
+
+    <div class="stat-label">Total Sessions</div>
+
+    <div class="stat-value">
+      {{ stats.total_sessions if stats else 0 }}
+    </div>
+
+    <div class="stat-sub">Logged so far</div>
+  </div>
+
+
+  <!-- DAILY GOAL -->
+  <div class="card stat-card" style="--accent:#fbbf24">
+    <div class="stat-icon">🔥</div>
+
+    <div class="stat-label">Daily Goal</div>
+
+    <div class="stat-value">
+      {{ stats.today_sessions if stats else 0 }}/3
+    </div>
+
+    <div class="stat-sub">Sessions today</div>
+  </div>
+
+</div>
+
+
+<!-- ================= RECENT ================= -->
+<div class="card section-card">
+  <div class="section-head">
+    <h3 class="sec-title">Recent Sessions</h3>
+    <a href="{{ url_for('tracker') }}" class="link-small">View all →</a>
+  </div>
+
+  {% if recent %}
+    <div class="session-list">
+      {% for s in recent %}
+      <div class="session-item">
+
+        <div class="session-dot"
+             style="background: var(--dot-{{ loop.index }})">
+        </div>
+
+        <div class="session-meta">
+          <div class="session-subject">{{ s.subject }}</div>
+          <div class="session-time">
+            {{ s.date }} · {{ s.time }} · {{ s.mood }}
+          </div>
+        </div>
+
+        <div class="session-dur">{{ s.duration }}m</div>
+      </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="empty-state">
+      <p>No sessions yet.</p>
+      <a href="{{ url_for('tracker') }}" class="btn-primary" style="margin-top:12px">
+        Log your first session
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+
+<!-- ================= QUICK LINKS ================= -->
+<div class="quick-links">
+
+  <a href="{{ url_for('timer') }}" class="quick-card">
+    <span class="qc-icon">⏰</span>
+    <span class="qc-label">Pomodoro Timer</span>
+    <span class="qc-arrow">→</span>
+  </a>
+
+  <a href="{{ url_for('analytics') }}" class="quick-card">
+    <span class="qc-icon">📊</span>
+    <span class="qc-label">View Analytics</span>
+    <span class="qc-arrow">→</span>
+  </a>
+
+  <a href="{{ url_for('tracker') }}" class="quick-card">
+    <span class="qc-icon">✏️</span>
+    <span class="qc-label">Log a Session</span>
+    <span class="qc-arrow">→</span>
+  </a>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+{# ============================================================
+   StudyFlow — Pomodoro Timer Page
+   templates/timer.html
+============================================================ #}
+{% extends "base.html" %}
+{% block title %}Timer{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Pomodoro Timer</h2>
+    <p class="page-sub">Stay focused. Work in sprints, rest in between.</p>
+  </div>
+</div>
+
+{# ── Timer Card ── #}
+<div class="timer-wrapper">
+  <div class="card timer-card">
+
+    {# Preset duration buttons #}
+    <div class="preset-row" id="presets">
+      <button class="preset-btn" data-work="10" data-break="3">10 min</button>
+      <button class="preset-btn active" data-work="25" data-break="5">25 min</button>
+      <button class="preset-btn" data-work="20" data-break="5">20 min</button>
+      <button class="preset-btn" data-work="50" data-break="10">50 min</button>
+    </div>
+
+    {# SVG ring countdown #}
+    <div class="ring-wrap">
+      <svg class="timer-svg" viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="workGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#6d28d9"/>
+            <stop offset="100%" stop-color="#a78bfa"/>
+          </linearGradient>
+          <linearGradient id="breakGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#0d9488"/>
+            <stop offset="100%" stop-color="#2dd4bf"/>
+          </linearGradient>
+        </defs>
+        {# Background ring #}
+        <circle class="ring-bg" cx="100" cy="100" r="88"/>
+        {# Animated foreground ring — JS updates stroke-dashoffset #}
+        <circle class="ring-fg" cx="100" cy="100" r="88" id="ringFg"/>
+      </svg>
+
+      {# Time display inside the ring #}
+      <div class="timer-inner">
+        <div class="timer-display" id="timerDisplay">25:00</div>
+        <div class="timer-mode"    id="timerMode">Work Session</div>
+      </div>
+    </div>
+
+    {# Control buttons #}
+    <div class="timer-controls">
+      <button class="btn-primary"   id="startBtn">Start</button>
+      <button class="btn-secondary" id="resetBtn">Reset</button>
+    </div>
+
+    {# Info line showing break duration #}
+    <p class="break-info">
+      Break after session: <span id="breakLabel">5 min</span>
+    </p>
+
+    {# Session counter (increments each completed work session) #}
+    <div class="pomodoro-count">
+      <span id="pomodoroCount">0</span> sessions completed today
+    </div>
+
+  </div>
+
+  {# Tips card beside the timer #}
+  <div class="card tips-card">
+    <h3 class="sec-title">How it works</h3>
+    <ol class="tips-list">
+      <li>Pick a duration (25 min is classic).</li>
+      <li>Hit <strong>Start</strong> and focus on one task.</li>
+      <li>When the timer ends, take your break.</li>
+      <li>After 4 pomodoros, take a longer break.</li>
+    </ol>
+    <hr class="divider"/>
+    <h3 class="sec-title" style="margin-top:20px">Current Preset</h3>
+    <p class="tip-detail">Work: <strong id="presetWorkLabel">25</strong> min</p>
+    <p class="tip-detail">Break: <strong id="presetBreakLabel">5</strong> min</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Initialise timer — function defined in script.js
+  initPomodoroTimer();
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+
+<h1>📊 Analytics</h1>
+
+{% set weekly_labels = weekly_labels | default([]) %}
+{% set weekly_hours = weekly_hours | default([]) %}
+{% set subj_labels = subj_labels | default([]) %}
+{% set subj_data = subj_data | default([]) %}
+{% set mood_counts = mood_counts | default({}) %}
+{% set total_sessions = total_sessions | default(0) %}
+
+<div class="card">
+    <h2>Total Sessions: {{ total_sessions }}</h2>
+</div>
+
+{% if total_sessions > 0 %}
+
+<div class="card">
+    <h3>Study Time (Last 7 Days)</h3>
+    <canvas id="weeklyChart"></canvas>
+</div>
+
+<div class="card">
+    <h3>Subject Breakdown</h3>
+    <canvas id="subjectChart"></canvas>
+</div>
+
+<div class="card">
+    <h3>Mood Distribution</h3>
+    <canvas id="moodChart"></canvas>
+</div>
+
+{% else %}
+
+<div class="card">
+    <p>No study data yet. Start logging sessions!</p>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const weeklyLabels = {{ weekly_labels | tojson }};
+const weeklyData = {{ weekly_hours | tojson }};
+const subjLabels = {{ subj_labels | tojson }};
+const subjData = {{ subj_data | tojson }};
+const moodData = {{ mood_counts | tojson }};
+
+if (weeklyLabels.length > 0) {
+
+    // Weekly Line Chart
+    new Chart(document.getElementById('weeklyChart'), {
+        type: 'line',
+        data: {
+            labels: weeklyLabels,
+            datasets: [{
+                label: 'Hours',
+                data: weeklyData,
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139,92,246,0.2)',
+                fill: true,
+                tension: 0.4
+            }]
+        }
+    });
+
+    // Subject Bar Chart
+    new Chart(document.getElementById('subjectChart'), {
+        type: 'bar',
+        data: {
+            labels: subjLabels,
+            datasets: [{
+                label: 'Hours',
+                data: subjData,
+                backgroundColor: '#22c55e'
+            }]
+        }
+    });
+
+    // Mood Doughnut Chart
+    new Chart(document.getElementById('moodChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(moodData),
+            datasets: [{
+                data: Object.values(moodData),
+                backgroundColor: [
+                    '#8b5cf6',
+                    '#22c55e',
+                    '#f97316',
+                    '#ef4444',
+                    '#3b82f6'
+                ]
+            }]
+        }
+    });
+
+}
+</script>
+{% endblock %}

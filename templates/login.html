@@ -1,0 +1,40 @@
+{# ============================================================
+   StudyFlow — Login Page
+   templates/login.html
+============================================================ #}
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+
+  {# Logo / heading #}
+  <div class="auth-header">
+    <h1 class="auth-logo">Study<span>Flow</span></h1>
+    <p class="auth-subtitle">Welcome back. Let's get focused.</p>
+  </div>
+
+  {# Login form — action points to the /login Flask route #}
+  <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username"
+             placeholder="your username" required autocomplete="username"/>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password"
+             placeholder="••••••••" required autocomplete="current-password"/>
+    </div>
+
+    <button type="submit" class="btn-primary full-width">Sign In →</button>
+  </form>
+
+  <p class="auth-switch">
+    Don't have an account?
+    <a href="{{ url_for('signup') }}">Create one</a>
+  </p>
+</div>
+{% endblock %}

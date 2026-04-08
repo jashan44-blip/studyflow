@@ -1,0 +1,51 @@
+{# ============================================================
+   StudyFlow — Sign Up Page
+   templates/signup.html
+============================================================ #}
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+
+  <div class="auth-header">
+    <h1 class="auth-logo">Study<span>Flow</span></h1>
+    <p class="auth-subtitle">Create your account. Start tracking.</p>
+  </div>
+
+  {# Signup form — action points to the /signup Flask route #}
+  <form method="POST" action="{{ url_for('signup') }}" class="auth-form">
+
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username"
+             placeholder="choose a username" required autocomplete="username"/>
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email"
+             placeholder="you@email.com" required autocomplete="email"/>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password"
+             placeholder="min. 6 characters" required autocomplete="new-password"/>
+    </div>
+
+    <div class="field">
+      <label for="confirm_password">Confirm Password</label>
+      <input type="password" id="confirm_password" name="confirm_password"
+             placeholder="repeat password" required autocomplete="new-password"/>
+    </div>
+
+    <button type="submit" class="btn-primary full-width">Create Account →</button>
+  </form>
+
+  <p class="auth-switch">
+    Already have an account?
+    <a href="{{ url_for('login') }}">Sign in</a>
+  </p>
+</div>
+{% endblock %}
