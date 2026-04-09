@@ -215,6 +215,47 @@ def tracker():
         sessions=sessions
     )
 
+# ➕ ADD SESSION
+@app.route("/add", methods=["POST"])
+@login_required
+def add_session():
+    try:
+        subject = request.form.get("subject", "").strip()
+        duration = request.form.get("duration", "").strip()
+        mood = request.form.get("mood", "Neutral").strip()
+
+        if not subject:
+            flash("Subject is required.", "danger")
+            return redirect(url_for("tracker"))
+
+        if not duration.isdigit():
+            flash("Duration must be a valid number.", "danger")
+            return redirect(url_for("tracker"))
+
+        duration = int(duration)
+
+        if duration <= 0:
+            flash("Duration must be greater than 0.", "danger")
+            return redirect(url_for("tracker"))
+
+        new_session = StudySession(
+            subject=subject,
+            duration=duration,
+            mood=mood,
+            user_id=session["user_id"]
+        )
+
+        db.session.add(new_session)
+        db.session.commit()
+
+        flash("Study session logged successfully!", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error logging session: {str(e)}", "danger")
+
+    return redirect(url_for("tracker"))
+
 # ❌ DELETE
 @app.route("/delete/<int:session_id>", methods=["POST"])
 @login_required
