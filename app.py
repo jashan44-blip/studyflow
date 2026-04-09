@@ -11,7 +11,17 @@ app = Flask(__name__)
 app.secret_key = "studyflow_secret_key_change_in_production"
 
 # ── DATABASE CONFIG ──────────────────────────────────────────
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+import os
+
+app = Flask(__name__)
+app.secret_key = "studyflow_secret_key_change_in_production"
+
+# DATABASE CONFIG
+os.makedirs(app.instance_path, exist_ok=True)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = \
+    'sqlite:///' + os.path.join(app.instance_path, 'database.db')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -30,6 +40,9 @@ class StudySession(db.Model):
     mood = db.Column(db.String(50))
     user_id = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+with app.app_context():
+    db.create_all()
 
 
 # ── LOGIN REQUIRED ───────────────────────────────────────────
@@ -57,8 +70,12 @@ def index():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].strip()
         password = request.form['password']
+
+        if User.query.filter_by(username=username).first():
+            flash("Username already exists", "danger")
+            return redirect('/signup')
 
         hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
@@ -66,10 +83,10 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
+        flash("Signup successful! Please login.", "success")
         return redirect('/login')
 
     return render_template('signup.html')
-
 
 # 🔓 LOGIN
 @app.route('/login', methods=['GET', 'POST'])
@@ -137,6 +154,12 @@ def dashboard():
         reverse=True
     )
 
+    # --- XP SYSTEM ---
+    xp = total_minutes * 2 + (streak * 10)
+
+    level = xp // 100 + 1
+    progress = xp % 100
+
     recent = []
     for s in sorted_sessions[:5]:
         recent.append({
@@ -149,11 +172,14 @@ def dashboard():
 
     # --- STATS ---
     stats = {
-        "today_minutes": today_minutes,
-        "today_sessions": today_sessions,
-        "total_sessions": total_sessions,
-        "streak": streak
-    }
+    "today_minutes": today_minutes,
+    "today_sessions": today_sessions,
+    "total_sessions": total_sessions,
+    "streak": streak,
+    "xp": xp,
+    "level": level,
+    "progress": progress
+}
 
     return render_template(
         "dashboard.html",
@@ -169,34 +195,25 @@ def dashboard():
 def tracker():
     user_id = session["user_id"]
 
-    sessions = StudySession.query.filter_by(user_id=user_id)\
+    raw_sessions = StudySession.query.filter_by(user_id=user_id)\
         .order_by(StudySession.timestamp.desc()).all()
 
-    return render_template("tracker.html",
-                           username=session.get("username", "User"),
-                           sessions=sessions)
+    sessions = []
+    for s in raw_sessions:
+        sessions.append({
+            "id": s.id,
+            "subject": s.subject,
+            "duration": s.duration,
+            "mood": s.mood,
+            "date": s.timestamp.strftime("%d %b") if s.timestamp else "",
+            "time": s.timestamp.strftime("%I:%M %p") if s.timestamp else ""
+        })
 
-
-# ➕ ADD SESSION
-@app.route('/add', methods=['POST'])
-@login_required
-def add_session():
-    subject = request.form['subject']
-    duration = int(request.form['duration'])
-    mood = request.form['mood']
-
-    new_session = StudySession(
-        subject=subject,
-        duration=duration,
-        mood=mood,
-        user_id=session['user_id']
+    return render_template(
+        "tracker.html",
+        username=session.get("username", "User"),
+        sessions=sessions
     )
-
-    db.session.add(new_session)
-    db.session.commit()
-
-    return redirect('/tracker')
-
 
 # ❌ DELETE
 @app.route("/delete/<int:session_id>", methods=["POST"])
